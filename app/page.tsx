@@ -59,10 +59,10 @@ const Home = () => {
                 return;
             }
 
-            // if (!escudoImage) {
-            //     alert("Por favor selecciona un escudo para continuar.");
-            //     return;
-            // }
+            if (!escudoImage) {
+                alert("Por favor selecciona un escudo para continuar.");
+                return;
+            }
 
             setShowResult(false);
             setLoading(true);

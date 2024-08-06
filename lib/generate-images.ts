@@ -14,7 +14,7 @@ export const generate = async (colorList: string[], escudoImage: string): Promis
         return await generateImages(prompt);
     }
     catch (error: any) {
-        console.log(error.toString());
+        console.log("generate error:", error.toString());
         throw new Error(error.toString());
     }
 }
@@ -39,6 +39,8 @@ const generatePrompt = async (colorList: string[], escudoImage: string): Promise
         ],
     });
 
+    console.log("escudoDescription", escudoDescription);
+
     const { text } = await generateText({
         model: google('models/gemini-1.5-pro-latest'),
         prompt: `Construye un ejemplo de prompt específico para generar la imagen de un uniforme de futbol con dall-e teniendo en cuenta lo siguiente:
@@ -62,6 +64,8 @@ const generateImages = async (promptText: string): Promise<string[]> => {
         size: "512x512",
         n: 2,
     });
+
+    console.log("images", response.data.join(", "));
 
     return [
         response.data[0].url || "",
