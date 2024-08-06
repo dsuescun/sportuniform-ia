@@ -1,113 +1,196 @@
+'use client';
+
+import { useState } from "react";
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import ColorSelector from "@/components/color-selector";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { X as CloseIcon, Loader2, Minus } from "lucide-react";
+import Uniforms from "@/components/uniforms";
+import { generate } from "@/lib/generate-images";
 
-export default function Home() {
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+const Home = () => {
+    const [agregarColor, setAgregarColor] = useState(false);
+    const [colorSelected, setColorSelected] = useState("#14ae31");
+    const [colorSelectedList, setColorSelectedList] = useState([] as string[]);
+    const [noMoreColor, setNoMoreColor] = useState(false);
+    const [escudoImage, setEscudoImage] = useState("");
+    const [showResult, setShowResult] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [imageUrlList, setImageUrlList] = useState([] as string[]);
 
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+    const onChangeColor = (color: string) => {
+        setColorSelected(color);
+    }
 
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
+    const onContinue = () => {
+        setColorSelectedList([...colorSelectedList, colorSelected]);
+        setAgregarColor(false);
+        if (colorSelectedList.length === 2) {
+            setNoMoreColor(true);
+        }
+    }
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
+    const removeColor = (index: number) => {
+        const newColorList = colorSelectedList.filter((color, i) => i !== index);
+        setColorSelectedList(newColorList);
+        if (noMoreColor) {
+            setNoMoreColor(false);
+        }
+    }
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64String = reader.result as string;
+                setEscudoImage(base64String);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  );
+    const generateUniforms = async () => {
+        try {
+            if (colorSelectedList.length === 0) {
+                alert("Por favor selecciona al menos un color para continuar.");
+                return;
+            }
+
+            // if (!escudoImage) {
+            //     alert("Por favor selecciona un escudo para continuar.");
+            //     return;
+            // }
+
+            setShowResult(false);
+            setLoading(true);
+
+            // Call the API to generate the images
+            const response = await generate(colorSelectedList, escudoImage);
+            console.log("imageUrlList", response);
+            if (response && response.length > 0) {
+                setImageUrlList(response);
+                setShowResult(true);
+            }
+
+            setLoading(false);
+        }
+        catch (error) {
+            alert("Ocurrió un error al intentar generar las propuestas de uniformes.");
+            setLoading(false);
+        }
+    }
+    
+    const reset = () => {
+        setAgregarColor(false);
+        setColorSelected("#14ae31");
+        setColorSelectedList([]);
+        setNoMoreColor(false);
+        setEscudoImage("");
+        setShowResult(false);
+        setLoading(false);
+        setImageUrlList([]);
+    }
+
+    return (
+        <main className="flex flex-col items-center p-20">
+            <h1 className="text-4xl font-bold">Construye tu uniforme de fútbol con ayuda de la IA!</h1>
+
+            <div className="m-10">
+                <div className="flex gap-2 max-w-full">
+                    <Card className="w-[450px] max-w-full">
+                        <CardHeader>
+                            <CardTitle>Colores representativos</CardTitle>
+                            <CardDescription>Elige los colores representativos de tu equipo (Máximo 3).</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {
+                                colorSelectedList.length > 0 &&
+                                <div className="flex flex-col gap-2 mb-5">
+                                    {
+                                        colorSelectedList.map((color, index) => (
+                                            <div key={index} className="flex flex-row">
+                                                <div className="h-10 w-1/2 rounded-l-md border-2 border-r-0" style={{ backgroundColor: color }}>
+                                                </div>
+                                                <div className="h-10 w-1/2 rounded-r-md border-2 border-l-0 content-center text-center">
+                                                    {"Color # " + (index + 1)}
+                                                </div>
+                                                <Button className="ml-1" variant="destructive" size="icon" onClick={() => removeColor(index)}>
+                                                    <Minus className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        ))
+                                    }
+                                </div>
+                            }
+
+                            {
+                                !agregarColor && !noMoreColor &&
+                                <div className="flex justify-end">
+                                    <Button variant="secondary" onClick={() => setAgregarColor(true)}>Agrega color</Button>
+                                </div>
+                            }
+
+                            {
+                                agregarColor &&
+                                <div>
+                                    <ColorSelector color={colorSelected} onChange={onChangeColor} style={{ width: '100%' }} />
+                                    <div className="flex gap-1 justify-end mt-2">
+                                        <Button variant="secondary" onClick={() => onContinue()}>Continuar</Button>
+                                        <Button variant="destructive" size="icon" onClick={() => setAgregarColor(false)}>
+                                            <CloseIcon className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            }
+                        </CardContent>
+                    </Card>
+
+                    <Card className="w-[450px] max-w-full">
+                        <CardHeader>
+                            <CardTitle>Escudo</CardTitle>
+                            <CardDescription>Elige el escudo de tu equipo.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Input id="picture" type="file" onChange={handleImageChange} />
+                            {
+                                escudoImage &&
+                                <div className="flex justify-center">
+                                    <Image src={escudoImage} alt="Escudo" width={200} height={200} className="mt-5" />
+                                </div>
+                            }
+                        </CardContent>
+                    </Card>
+                </div>
+
+                <div className="flex mt-5 justify-center gap-2">
+                    <Button
+                        size="lg"
+                        onClick={generateUniforms}
+                        disabled={loading}
+                    >
+                        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Generar uniformes
+                    </Button>
+                    <Button
+                        size="lg"
+                        onClick={reset}
+                        disabled={loading}
+                        variant="ghost"
+                    >
+                        Limpiar
+                    </Button>
+                </div>
+            </div>
+
+            {loading && <h1 className="text-2xl font-bold w-[900px] max-w-full text-center">
+                La IA esta generando algunas propuestas para ti, espera por favor...</h1>}
+
+            {showResult && <Uniforms imageUrlList={imageUrlList} />}
+        </main>
+    );
 }
+
+export default Home;
