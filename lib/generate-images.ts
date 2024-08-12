@@ -61,7 +61,7 @@ const generateImages = async (promptText: string): Promise<string[]> => {
     const response = await openai.images.generate({
         model: process.env.MODEL_GEN_IMAGE || 'dall-e-2',
         prompt: promptText,
-        size: "512x512",
+        size: '1024x1024',
         n: 2,
     });
 
